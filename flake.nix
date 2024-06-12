@@ -21,14 +21,22 @@
         packages = with pkgs;
           [
             python311
-            google-cloud-sdk.withExtraComponents
-            [google-cloud-sdk.components.cloud-cli]
+            # google-cloud-sdk.withExtraComponents
+            # [google-cloud-sdk.components.cloud-cli]
+            google-cloud-sdk
           ]
           # Python packages
           ++ (with pkgs.python311Packages; [
             pip
             venvShellHook
+            streamlit
+            chromadb
+            langchain
+            pypdf
           ]);
+        shellHook = ''
+          gcloud auth activate-service-account --key-file=key-file.json
+        '';
       };
     });
   };
