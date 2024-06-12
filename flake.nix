@@ -1,43 +1,53 @@
 {
-  description = "A Nix-flake-based Python development environment";
+  description = "Python venv development env in nix";
 
-  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.*.tar.gz";
+  inputs = {
+    utils.url = "github:numtide/flake-utils";
+  };
 
   outputs = {
     self,
     nixpkgs,
-  }: let
-    supportedSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-    forEachSupportedSystem = f:
-      nixpkgs.lib.genAttrs supportedSystems (system:
-        f {
-          pkgs = import nixpkgs {inherit system;};
-        });
-  in {
-    devShells = forEachSupportedSystem ({pkgs}: {
-      default = pkgs.mkShell {
-        venvDir = "venv";
-        # packages
-        packages = with pkgs;
-          [
-            python311
-            # google-cloud-sdk.withExtraComponents
-            # [google-cloud-sdk.components.cloud-cli]
-            google-cloud-sdk
-          ]
-          # Python packages
-          ++ (with pkgs.python311Packages; [
-            pip
-            venvShellHook
-            streamlit
-            chromadb
-            langchain
-            pypdf
-          ]);
-        shellHook = ''
+    utils,
+    ...
+  }:
+    utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {inherit system;};
+      pythonPackages = pkgs.python3Packages;
+    in {
+      devShells.default = pkgs.mkShell {
+        name = "python-venv";
+        venvDir = "./.venv";
+        buildInputs = [
+          # A Python interpreter including the 'venv' module is required to bootstrap
+          # the environment.
+          pythonPackages.python
+
+          # This executes some shell code to initialize a venv in $venvDir before
+          # dropping into the shell
+          pythonPackages.venvShellHook
+
+          # Those are dependencies that we would like to use from nixpkgs, which will
+          # add them to PYTHONPATH and thus make them accessible from within the venv.
+          pythonPackages.numpy
+
+          # Google cloud sdk package
+          pkgs.google-cloud-sdk
+        ];
+
+        # Run this command, only after creating the virtual environment
+        postVenvCreation = ''
+          unset SOURCE_DATE_EPOCH
+          pip install -r requirements.txt
+        '';
+
+        # Now we can execute any commands within the virtual environment.
+        # This is optional and can be left out to run pip manually.
+        postShellHook = ''
+          # allow pip to install wheels
+          unset SOURCE_DATE_EPOCH
           gcloud auth activate-service-account --key-file=key-file.json
         '';
       };
     });
-  };
 }
