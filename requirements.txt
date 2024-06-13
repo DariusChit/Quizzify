@@ -4,3 +4,5 @@ langchain
 langchain-google-vertexai
 langchain-community
 pypdf
+google-cloud-aiplatform>=1.38
+langchain-text-splitters

@@ -48,6 +48,9 @@
           unset SOURCE_DATE_EPOCH
           gcloud auth activate-service-account --key-file=key-file.json
         '';
+
+        # Dependency
+        LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib/:/run/opengl-driver/lib/";
       };
     });
 }

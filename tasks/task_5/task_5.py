@@ -18,8 +18,8 @@ class ChromaCollectionCreator:
         :param processor: An instance of DocumentProcessor that has processed documents.
         :param embeddings_config: An embedding client for embedding documents.
         """
-        self.processor = processor      # This will hold the DocumentProcessor from Task 3
-        self.embed_model = embed_model  # This will hold the EmbeddingClient from Task 4
+        self.processor: DocumentProcessor = processor      # This will hold the DocumentProcessor from Task 3
+        self.embed_model: EmbeddingClient = embed_model  # This will hold the EmbeddingClient from Task 4
         self.db = None                  # This will hold the Chroma collection
     
     def create_chroma_collection(self):
@@ -57,6 +57,7 @@ class ChromaCollectionCreator:
         # Use a TextSplitter from Langchain to split the documents into smaller text chunks
         # https://python.langchain.com/docs/modules/data_connection/document_transformers/character_text_splitter
         # [Your code here for splitting documents]
+        texts = self.processor.pages
         
         if texts is not None:
             st.success(f"Successfully split pages to {len(texts)} documents!", icon="✅")
@@ -65,8 +66,10 @@ class ChromaCollectionCreator:
         # https://docs.trychroma.com/
         # Create a Chroma in-memory client using the text chunks and the embeddings model
         # [Your code here for creating Chroma collection]
+        self.db = Chroma(collection_name="store", embedding_function=self.embed_model)
+        print(f"db = {self.db}")
         
-        if self.db:
+        if self.db is not None:
             st.success("Successfully created Chroma Collection!", icon="✅")
         else:
             st.error("Failed to create Chroma Collection!", icon="🚨")
@@ -81,6 +84,7 @@ class ChromaCollectionCreator:
         if self.db:
             docs = self.db.similarity_search_with_relevance_scores(query)
             if docs:
+                print(f"DOCSSSSSSS: {docs[0]}")
                 return docs[0]
             else:
                 st.error("No matching documents found!", icon="🚨")

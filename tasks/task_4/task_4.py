@@ -1,8 +1,10 @@
 # embedding_client.py
 
+from langchain_core.embeddings import Embeddings
 from langchain_google_vertexai import VertexAIEmbeddings
+from typing import List
 
-class EmbeddingClient:
+class EmbeddingClient(Embeddings):
     """
     Task: Initialize the EmbeddingClient class to connect to Google Cloud's VertexAI for text embeddings.
 
@@ -34,20 +36,22 @@ class EmbeddingClient:
         # Read about the VertexAIEmbeddings wrapper from Langchain here
         # https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
         self.client = VertexAIEmbeddings(
-            #### YOUR CODE HERE ####
+            model_name = model_name,
+            project = project,
+            location = location
         )
         
-    def embed_query(self, query):
+    def embed_query(self, text):
         """
         Uses the embedding client to retrieve embeddings for the given query.
 
         :param query: The text query to embed.
         :return: The embeddings for the query or None if the operation fails.
         """
-        vectors = self.client.embed_query(query)
+        vectors = self.client.embed_query(text)
         return vectors
     
-    def embed_documents(self, documents):
+    def embed_documents(self, texts) -> List[List[float]]:
         """
         Retrieve embeddings for multiple documents.
 
@@ -55,14 +59,14 @@ class EmbeddingClient:
         :return: A list of embeddings for the given documents.
         """
         try:
-            return self.client.embed_documents(documents)
+            return self.client.embed_documents(texts)
         except AttributeError:
             print("Method embed_documents not defined for the client.")
-            return None
+            return [[]]
 
 if __name__ == "__main__":
     model_name = "textembedding-gecko@003"
-    project = "YOUR PROJECT ID HERE"
+    project = "turnkey-thought-426114-j4"
     location = "us-central1"
 
     embedding_client = EmbeddingClient(model_name, project, location)
