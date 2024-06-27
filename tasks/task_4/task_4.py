@@ -4,7 +4,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_google_vertexai import VertexAIEmbeddings
 from typing import List
 
-class EmbeddingClient(Embeddings):
+class EmbeddingClient():
     """
     Task: Initialize the EmbeddingClient class to connect to Google Cloud's VertexAI for text embeddings.
 
